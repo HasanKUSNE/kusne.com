@@ -1,88 +1,98 @@
 var notes = [
-["Do","C"],
-["Do#","C#"],
-["Re","D"],
-["Mi-b","E-b"],
-["Mi","E"],
-["Fa","F"],
-["Fa#","F#"],
-["Sol","G"],
-["Sol#","G#"],
-["La","A"],
-["Si-b","B-b"],
-["Si","B"]
+    ["Do","C"],
+    ["Do#","C#"],
+    ["Re","D"],
+    ["Mi-b","E-b"],
+    ["Mi","E"],
+    ["Fa","F"],
+    ["Fa#","F#"],
+    ["Sol","G"],
+    ["Sol#","G#"],
+    ["La","A"],
+    ["Si-b","B-b"],
+    ["Si","B"]
 ];
 
-var baglamaDefaultValues = [9,7,2];     //  La,Sol,Re   //
-var karaDuzenDefaultValues = [0,7,2];   //  Do,Sol,Re   //
-// var baglamaDifferences =[10,5]
-// var karaDuzenDifferences =[7,2]
+const instrumentsName = {
+    BAGLAMA: 'baglama',
+    KARADUZEN: 'karaduzen',
+    GUITAR: 'guitar',
+    VIOLIN: 'violin'
+}
 
-var currentInstrumentDefaultValues = baglamaDefaultValues;
-// var currentInstrumentDifferences = baglamaDifferences;
+function Instrument(name,label,tuning){
+    this.name = name;
+    this.label = label;
+    this.tuning = tuning;
+    this.stringsCount = tuning.length;
+}
+
+var currentInstrument = baglama();
+
+function baglama(){ 
+    return new Instrument(instrumentsName.BAGLAMA,"Saz (Bağlama)",[9,7,2]);
+}
+
+function karaduzen(){ 
+    return new Instrument(instrumentsName.KARADUZEN,"Saz (Kara düzen)",[0,7,2]);
+}
+
+function guitar(){ 
+    return new Instrument(instrumentsName.GUITAR,"Gitar",[4,11,7,2,9,4]);
+}
+
+function violin(){ 
+    return new Instrument(instrumentsName.VIOLIN,"Keman",[7,2,9,4]);
+}
+
+
+
 var DoremiAbc = 0; // 0 = Do,Re,Mi..., 1 = A,B,C...
+loading();
 
-loadNotes();
-reset();
-
-$("#topStrings").change(function(){
-     var selectedValue = $(this).children("option:selected").val();
-     var difference = selectedValue - currentInstrumentDefaultValues[0];
-    calculate(difference)
-});
-
-$("#middleStrings").change(function(){
-    var selectedValue = $(this).children("option:selected").val();
-    var difference = selectedValue - currentInstrumentDefaultValues[1];
-   calculate(difference)
-});
-
-$("#bottomStrings").change(function(){
-    var selectedValue = $(this).children("option:selected").val();
-    var difference = selectedValue - currentInstrumentDefaultValues[2];
-   calculate(difference)
-});
-
-function loadNotes()
+// Click on a string [onChange]
+function onChange(e)
 {
-    $('#topStrings').empty()
-    $('#middleStrings').empty()
-    $('#bottomStrings').empty()
+    var selectedValue = parseInt(e.value,10);
+    var stringNumber = parseInt(e.id.replace("string",''),10);
+    var difference = selectedValue - currentInstrument.tuning[currentInstrument.stringsCount - stringNumber];
+    calculate(difference)
+}
 
-    for(var i = 0; i<notes.length;i++) 
-    {
-        // UpperStrings
-        $('#topStrings').append($('<option></option>').val(i).html(notes[i][DoremiAbc]));
+function loading(){
 
-        // middleStrins
-        $('#middleStrings').append($('<option></option>').val(i).html(notes[i][DoremiAbc]));
+    // Reset - ( Delete old strings )
+    $('#strings').empty();
 
-        // bottomStrings
-        $('#bottomStrings').append($('<option></option>').val(i).html(notes[i][DoremiAbc]));
+    //Update instument label
+    $('#cardHeader').html(currentInstrument.label + " akordu");
+
+    for(var i = currentInstrument.stringsCount; i>0;i--){
+
+        var stringId ="string"+ i ;
+
+        // Creating the string
+        $('#strings').append($("<li class='list-group-item'>Tel "+ i +" : <select id='"+ stringId +"' class='btn btn-info dropdown-toggle' onchange='onChange(this);'></select></li>"));
+
+        // Loading all notes on the string
+        for(var k = 0; k<notes.length;k++) 
+        {
+            $('#'+stringId).append($('<option></option>').val(k).html(notes[k][DoremiAbc]));
+        }        
     }
+
+    calculate(0);
 }
 
 function calculate(difference){
 
-    // Set topStrings value
-    var topStringsNewValue = getTheCorrectNote(currentInstrumentDefaultValues[0] + difference)
-    $("#topStrings").val(topStringsNewValue);
+    for(var i = currentInstrument.stringsCount; i>0;i--){
+        var stringId ="string"+ i ;   
 
-    // Set middleStrings value
-    var middleStringsNewValue = getTheCorrectNote(currentInstrumentDefaultValues[1] + difference)
-    $("#middleStrings").val(middleStringsNewValue);
-
-    // Set bottomStrings value 
-    var bottomStringsNewValue =  getTheCorrectNote(currentInstrumentDefaultValues[2] + difference)
-    $("#bottomStrings").val(bottomStringsNewValue);
-}
-
-function reset()
-{
-    // Default values
-    $("#topStrings").val(currentInstrumentDefaultValues[0]);
-    $("#middleStrings").val(currentInstrumentDefaultValues[1]);
-    $("#bottomStrings").val(currentInstrumentDefaultValues[2]); 
+        // Set tring value
+        var stringsNewValue =  getTheCorrectNote(currentInstrument.tuning[currentInstrument.stringsCount-i] + difference)
+        $('#'+stringId).val(stringsNewValue);
+    }
 }
 
 
@@ -118,16 +128,19 @@ $("input[name='Instrument']").click(function(){
     checkedInstrument.attr("checked", "checked");
 
     if($("#Bglm").prop("checked")){
-        currentInstrumentDefaultValues = baglamaDefaultValues;
-        // currentInstrumentDifferences = baglamaDifferences;
+       currentInstrument = baglama();
     }
-    else{
-        currentInstrumentDefaultValues = karaDuzenDefaultValues;
-        // currentInstrumentDifferences = karaDuzenDifferences;
+    else if($("#Krdzn").prop("checked")){
+        currentInstrument = karaduzen();
+    }
+    else if($("#Guitar").prop("checked")){
+        currentInstrument = guitar();
+    }
+    else if($("#Violin").prop("checked")){
+        currentInstrument = violin();
     }
     
-    loadNotes()
-    reset();
+    loading();
 });
 
 // Gestion des radio "type de notes"
@@ -137,8 +150,6 @@ $("input[name='notesType']").click(function(){
     $("input[name='notesType']:checked").parent().addClass('active');
     $("input[name='notesType']:checked").attr("checked", "checked");
 
-    // alert($("#Doremi").prop("checked"))
-
     if($("#Doremi").prop("checked")){
         DoremiAbc = 0
     }
@@ -146,7 +157,6 @@ $("input[name='notesType']").click(function(){
         DoremiAbc = 1
     }
 
-    loadNotes()
-    reset();
+    loading();
 });
 
