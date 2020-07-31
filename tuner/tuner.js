@@ -20,31 +20,61 @@ const instrumentsName = {
     VIOLIN: 'violin'
 }
 
-function Instrument(name,label,tuning){
+function Instrument(name,instrumentLabel,tuning, stringsLabel,desctiption){
     this.name = name;
-    this.label = label;
+    this.instrumentLabel = instrumentLabel;
     this.tuning = tuning;
     this.stringsCount = tuning.length;
+    this.stringsLabel = stringsLabel;
+    this.desctiption = desctiption;
 }
 
 var currentInstrument = baglama();
 
-function baglama(){ 
-    return new Instrument(instrumentsName.BAGLAMA,"Saz (Bağlama)",[9,7,2]);
+function baglama(){
+    var stringsLabel = ["Alt tel : &nbsp; ",
+                        "Orta tel : ",
+                        "Üst tel : &nbsp; "]
+
+    var desctiption ="Baglamanin standart akordu, yukarindan asagiya, La / Sol / Re seklindedir. "+
+    "<br/>Tellerden herhangi birtanesi farkli bir akorda çekilmek istenirse, diger teller de ayni oranda kaydirilmalidir. "+
+    "Bu islem bazen karmasik olabiceginden, bunu sizler için otomatiklestirdik.";
+
+    return new Instrument(instrumentsName.BAGLAMA,"Saz (Bağlama)",[9,7,2],stringsLabel,desctiption);
 }
 
-function karaduzen(){ 
-    return new Instrument(instrumentsName.KARADUZEN,"Saz (Kara düzen)",[0,7,2]);
+function karaduzen(){     
+    var stringsLabel = ["Alt tel : &nbsp; ",
+                        "Orta tel : ",
+                        "Üst tel : &nbsp; "]
+
+    var desctiption ="";
+
+    return new Instrument(instrumentsName.KARADUZEN,"Saz (Kara düzen)",[0,7,2],stringsLabel,desctiption);
 }
 
 function guitar(){ 
-    return new Instrument(instrumentsName.GUITAR,"Gitar",[4,11,7,2,9,4]);
+    var stringsLabel = ["Tel 1 (Alt) : ",
+                        "Tel 2 : &nbsp; &nbsp; &nbsp; &nbsp; ",
+                        "Tel 3 : &nbsp; &nbsp; &nbsp; &nbsp; ",
+                        "Tel 4 : &nbsp; &nbsp; &nbsp; &nbsp; ",
+                        "Tel 5 : &nbsp; &nbsp; &nbsp; &nbsp; ",
+                        "Tel 6 (Üst) : "]
+    var desctiption ="";
+
+    return new Instrument(instrumentsName.GUITAR,"Gitar",[4,11,7,2,9,4],stringsLabel,desctiption);
 }
 
 function violin(){ 
-    return new Instrument(instrumentsName.VIOLIN,"Keman",[7,2,9,4]);
+    var stringsLabel = ["Tel 1 (Alt) : ",
+                        "Tel 2 : &nbsp; &nbsp; &nbsp; &nbsp; ",
+                        "Tel 3 : &nbsp; &nbsp; &nbsp; &nbsp; ",
+                        "Tel 4 (Üst) : "]
+                        
+    desctiption="";
+    
+    return new Instrument(instrumentsName.VIOLIN,"Keman",[7,2,9,4],stringsLabel,desctiption);
 }
-
 
 
 var DoremiAbc = 0; // 0 = Do,Re,Mi..., 1 = A,B,C...
@@ -65,14 +95,15 @@ function loading(){
     $('#strings').empty();
 
     //Update instument label
-    $('#cardHeader').html(currentInstrument.label + " akordu");
+    $('#cardHeader').html(currentInstrument.instrumentLabel + " akordu");
 
     for(var i = currentInstrument.stringsCount; i>0;i--){
 
         var stringId ="string"+ i ;
-
         // Creating the string
-        $('#strings').append($("<li class='list-group-item'>Tel "+ i +" : <select id='"+ stringId +"' class='btn btn-info dropdown-toggle' onchange='onChange(this);'></select></li>"));
+        $('#strings').append($(
+            "<li class='list-group-item'>"+ currentInstrument.stringsLabel[i-1] +
+            "<select id='"+ stringId +"' class='btn btn-info dropdown-toggle' onchange='onChange(this);'></select></li>"));
 
         // Loading all notes on the string
         for(var k = 0; k<notes.length;k++) 
@@ -80,6 +111,8 @@ function loading(){
             $('#'+stringId).append($('<option></option>').val(k).html(notes[k][DoremiAbc]));
         }        
     }
+
+    $("#desctiption").html(currentInstrument.desctiption);
 
     calculate(0);
 }
